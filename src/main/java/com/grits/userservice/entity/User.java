@@ -14,6 +14,7 @@ import org.hibernate.annotations.UuidGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "`user`")
@@ -31,7 +32,7 @@ public class User extends AuditableEntity {
             nullable = false,
             unique = true
     )
-    private String id;
+    private UUID id;
 
     @Column(name = "name", nullable = false)
     private String name;
@@ -48,6 +49,6 @@ public class User extends AuditableEntity {
     @Column(name = "active", nullable = false)
     private boolean active;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PaymentCard> paymentCards = new ArrayList<>();
 }

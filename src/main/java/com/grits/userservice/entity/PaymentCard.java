@@ -10,8 +10,10 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Entity
 @Table(name = "`payment_card`")
@@ -21,6 +23,7 @@ import java.time.LocalDate;
 public class PaymentCard extends AuditableEntity {
 
     @Id
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
     @Column(
             name = "id",
             length = 36,
@@ -28,7 +31,7 @@ public class PaymentCard extends AuditableEntity {
             nullable = false,
             unique = true
     )
-    private String id;
+    private UUID id;
 
     @Column(name = "number", nullable = false)
     private String number;
