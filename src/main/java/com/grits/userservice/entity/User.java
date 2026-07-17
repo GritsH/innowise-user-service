@@ -12,6 +12,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -41,7 +42,7 @@ public class User extends AuditableEntity {
     private String surname;
 
     @Column(name = "birth_date", nullable = false)
-    private String birthDate;
+    private LocalDate birthDate;
 
     @Column(name = "email", nullable = false)
     private String email;
