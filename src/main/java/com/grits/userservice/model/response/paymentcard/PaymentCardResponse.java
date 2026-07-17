@@ -1,7 +1,9 @@
 package com.grits.userservice.model.response.paymentcard;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -9,6 +11,8 @@ import java.util.UUID;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class PaymentCardResponse {
 
     private UUID id;
