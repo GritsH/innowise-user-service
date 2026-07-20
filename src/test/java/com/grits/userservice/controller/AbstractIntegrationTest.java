@@ -12,8 +12,8 @@ import org.testcontainers.containers.PostgreSQLContainer;
 @ActiveProfiles("test")
 public abstract class AbstractIntegrationTest {
     static PostgreSQLContainer<?> postgres =
-            new PostgreSQLContainer<>("postgres:16")
-                    .withDatabaseName("userdb")
+            new PostgreSQLContainer<>("postgres:17")
+                    .withDatabaseName("userservice")
                     .withUsername("postgres")
                     .withPassword("postgres")
                     .withInitScript("init.sql");
