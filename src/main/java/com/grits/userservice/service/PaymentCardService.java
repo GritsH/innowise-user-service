@@ -39,7 +39,7 @@ public class PaymentCardService {
         log.info("Creating card for user {}", userId);
 
         User user = userDao.getUserById(userId);
-        if (user.getPaymentCards().size() >= 5) {
+        if (paymentCardDao.countCardsByUserId(userId) >= 5) {
             throw new MaxCardAmountException(userId);
         }
         PaymentCard card = paymentCardMapper.toEntity(request);

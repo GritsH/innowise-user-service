@@ -3,9 +3,13 @@ package com.grits.userservice.exception.handler;
 import com.grits.userservice.exception.GlobalServiceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.ErrorResponse;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -18,5 +22,17 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = GlobalServiceException.class)
     public @ResponseBody ErrorResponse handleExceptions(GlobalServiceException ex) {
         return ErrorResponse.create(ex, ex.getStatusCode(), ex.getMessage());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public @ResponseBody ErrorResponse handleValidationExceptions(MethodArgumentNotValidException ex) {
+        List<String> errors = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .collect(Collectors.toList());
+
+        String errorMessage = String.join(", ", errors);
+        return ErrorResponse.create(ex, HttpStatus.BAD_REQUEST, errorMessage);
     }
 }
