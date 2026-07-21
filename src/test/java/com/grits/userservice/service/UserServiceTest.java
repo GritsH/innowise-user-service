@@ -2,6 +2,8 @@ package com.grits.userservice.service;
 
 import com.grits.userservice.dao.UserDao;
 import com.grits.userservice.entity.User;
+import com.grits.userservice.exception.UserAlreadyExistsException;
+import com.grits.userservice.exception.UserNotFoundException;
 import com.grits.userservice.mapper.UserMapper;
 import com.grits.userservice.model.request.user.CreateUserRequest;
 import com.grits.userservice.model.request.user.UpdateUserRequest;
@@ -21,6 +23,8 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -59,15 +63,26 @@ class UserServiceTest {
     @Test
     @DisplayName("should create new user")
     void createUser() {
-        when(userMapper.toEntity(createUserRequest)).thenReturn(user).thenReturn(user);
+        when(userMapper.toEntity(createUserRequest)).thenReturn(user);
         when(userDao.save(user)).thenReturn(user);
         when(userMapper.toResponse(user)).thenReturn(userResponse);
 
         UserResponse result = userService.createUser(createUserRequest);
 
-        verify(userDao).save(user);
-
         assertThat(result).isSameAs(userResponse);
+
+        verify(userMapper).toEntity(createUserRequest);
+        verify(userDao).save(user);
+        verify(userMapper).toResponse(user);
+    }
+
+    @Test
+    @DisplayName("should throw exception if user already exists")
+    void createUserThrowException() {
+        when(userMapper.toEntity(createUserRequest)).thenReturn(user).thenReturn(user);
+        doThrow(UserAlreadyExistsException.class).when(userDao).save(user);
+
+        assertThatThrownBy(() -> userService.createUser(createUserRequest)).isInstanceOf(UserAlreadyExistsException.class);
     }
 
     @Test
@@ -80,9 +95,20 @@ class UserServiceTest {
 
         UserResponse result = userService.getUserById(id);
 
-        verify(userDao).getUserById(id);
-
         assertThat(result).isNotNull();
+
+        verify(userDao).getUserById(id);
+        verify(userMapper).toResponse(user);
+    }
+
+    @Test
+    @DisplayName("should throw exception if user does not exist")
+    void getUserByIdThrowException() {
+        UUID id = UUID.randomUUID();
+
+        doThrow(UserNotFoundException.class).when(userDao).getUserById(id);
+
+        assertThatThrownBy(() -> userService.getUserById(id)).isInstanceOf(UserNotFoundException.class);
     }
 
     @Test
@@ -95,10 +121,11 @@ class UserServiceTest {
 
         Page<UserResponse> result = userService.getAllUsers(null, null, 0, 10);
 
-        verify(userDao).getAllUsers(null, null, 0, 10);
-
         assertThat(result).isNotNull();
         assertThat(result.getTotalElements()).isEqualTo(1);
+
+        verify(userDao).getAllUsers(null, null, 0, 10);
+        verify(userMapper).toResponse(user);
     }
 
     @Test
@@ -112,11 +139,12 @@ class UserServiceTest {
 
         UserResponse result = userService.updateUser(id, updateUserRequest);
 
+        assertThat(result).isEqualTo(userResponse);
+
         verify(userDao).getUserById(id);
         verify(userMapper).updateEntity(updateUserRequest, user);
         verify(userDao).save(user);
-
-        assertThat(result).isEqualTo(userResponse);
+        verify(userMapper).toResponse(user);
     }
 
     @Test
@@ -129,9 +157,10 @@ class UserServiceTest {
 
         UserResponse result = userService.deactivateUser(id);
 
-        verify(userDao).deactivateUser(id);
-
         assertThat(result).isEqualTo(userResponse);
+
+        verify(userDao).deactivateUser(id);
+        verify(userMapper).toResponse(user);
     }
 
     @Test
@@ -144,8 +173,9 @@ class UserServiceTest {
 
         UserResponse result = userService.activateUser(id);
 
-        verify(userDao).activateUser(id);
-
         assertThat(result).isEqualTo(userResponse);
+
+        verify(userDao).activateUser(id);
+        verify(userMapper).toResponse(user);
     }
 }

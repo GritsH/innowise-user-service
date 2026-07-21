@@ -30,7 +30,7 @@ public class GlobalExceptionHandler {
                 .getFieldErrors()
                 .stream()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
-                .collect(Collectors.toList());
+                .toList();
 
         String errorMessage = String.join(", ", errors);
         return ErrorResponse.create(ex, HttpStatus.BAD_REQUEST, errorMessage);

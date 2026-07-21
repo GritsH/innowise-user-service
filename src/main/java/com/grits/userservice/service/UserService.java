@@ -32,7 +32,7 @@ public class UserService {
         user.setActive(true);
         User savedUser = userDao.save(user);
 
-        log.info("User created with id: {}", savedUser.getId());
+        log.info("User created with email: {}", savedUser.getEmail());
         return userMapper.toResponse(savedUser);
     }
 
@@ -53,8 +53,8 @@ public class UserService {
     @Transactional
     @CachePut(value = "users", key = "#id")
     public UserResponse updateUser(UUID id, UpdateUserRequest request) {
-        log.info("Updating user with id: {}", id
-        );
+        log.info("Updating user with id: {}", id);
+
         User user = userDao.getUserById(id);
         userMapper.updateEntity(request, user);
         User updatedUser = userDao.save(user);

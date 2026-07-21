@@ -5,6 +5,9 @@ import com.grits.userservice.dao.UserDao;
 import com.grits.userservice.entity.PaymentCard;
 import com.grits.userservice.entity.User;
 import com.grits.userservice.exception.MaxCardAmountException;
+import com.grits.userservice.exception.PaymentCardAlreadyExistsException;
+import com.grits.userservice.exception.PaymentCardNotFoundException;
+import com.grits.userservice.exception.UserNotFoundException;
 import com.grits.userservice.mapper.PaymentCardMapper;
 import com.grits.userservice.model.request.paymentcard.CreateCardRequest;
 import com.grits.userservice.model.request.paymentcard.UpdateCardRequest;
@@ -25,6 +28,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -78,16 +82,34 @@ class PaymentCardServiceTest {
 
         PaymentCardResponse result = paymentCardService.createCard(userId, createCardRequest);
 
+        assertThat(result).isSameAs(paymentCardResponse);
+
         verify(userDao).getUserById(userId);
         verify(paymentCardDao).countCardsByUserId(userId);
         verify(paymentCardDao).save(paymentCard);
+        verify(paymentCardMapper).toResponse(paymentCard);
+    }
 
-        assertThat(result).isSameAs(paymentCardResponse);
+    @Test
+    @DisplayName("should throw exception if card already exists")
+    void createCardThrowException() {
+        UUID userId = UUID.randomUUID();
+
+        when(userDao.getUserById(userId)).thenReturn(user);
+        when(paymentCardDao.countCardsByUserId(userId)).thenReturn(0);
+        when(paymentCardMapper.toEntity(createCardRequest)).thenReturn(paymentCard);
+        doThrow(PaymentCardAlreadyExistsException.class).when(paymentCardDao).save(paymentCard);
+
+        assertThatThrownBy(() -> paymentCardService.createCard(userId, createCardRequest)).isInstanceOf(PaymentCardAlreadyExistsException.class);
+
+        verify(userDao).getUserById(userId);
+        verify(paymentCardDao).countCardsByUserId(userId);
+        verify(paymentCardMapper).toEntity(createCardRequest);
     }
 
     @Test
     @DisplayName("should throw exception when user already has 5 cards")
-    void createCard_shouldThrowException() {
+    void createCardShouldThrowException() {
         UUID userId = UUID.randomUUID();
 
         when(userDao.getUserById(userId)).thenReturn(user);
@@ -100,6 +122,18 @@ class PaymentCardServiceTest {
     }
 
     @Test
+    @DisplayName("should throw exception when user does not exist")
+    void createCardShouldThrowExceptionNoUser() {
+        UUID userId = UUID.randomUUID();
+
+        doThrow(UserNotFoundException.class).when(userDao).getUserById(userId);
+
+        assertThatThrownBy(() -> paymentCardService.createCard(userId, createCardRequest)).isInstanceOf(UserNotFoundException.class);
+
+        verify(userDao).getUserById(userId);
+    }
+
+    @Test
     @DisplayName("should get card by id")
     void getCardById() {
         UUID id = UUID.randomUUID();
@@ -109,9 +143,22 @@ class PaymentCardServiceTest {
 
         PaymentCardResponse result = paymentCardService.getCardById(id);
 
-        verify(paymentCardDao).getPaymentCardById(id);
-
         assertThat(result).isEqualTo(paymentCardResponse);
+
+        verify(paymentCardDao).getPaymentCardById(id);
+        verify(paymentCardMapper).toResponse(paymentCard);
+    }
+
+    @Test
+    @DisplayName("should throw exception if card does not exist")
+    void getCardByIdThrowException() {
+        UUID id = UUID.randomUUID();
+
+        doThrow(PaymentCardNotFoundException.class).when(paymentCardDao).getPaymentCardById(id);
+
+        assertThatThrownBy(() -> paymentCardService.getCardById(id)).isInstanceOf(PaymentCardNotFoundException.class);
+
+        verify(paymentCardDao).getPaymentCardById(id);
     }
 
     @Test
@@ -125,10 +172,10 @@ class PaymentCardServiceTest {
 
         List<PaymentCardResponse> result = paymentCardService.getCardsByUserId(userId);
 
+        assertThat(result).containsExactly(paymentCardResponse);
+
         verify(paymentCardDao).getPaymentCardsByUserId(userId);
         verify(paymentCardMapper).toResponse(paymentCard);
-
-        assertThat(result).containsExactly(paymentCardResponse);
     }
 
     @Test
@@ -141,9 +188,10 @@ class PaymentCardServiceTest {
 
         Page<PaymentCardResponse> result = paymentCardService.getAllCards(null, 0, 10);
 
-        verify(paymentCardDao).getAllCards(null, 0, 10);
-
         assertThat(result.getContent()).containsExactly(paymentCardResponse);
+
+        verify(paymentCardDao).getAllCards(null, 0, 10);
+        verify(paymentCardMapper).toResponse(paymentCard);
     }
 
     @Test
@@ -157,11 +205,12 @@ class PaymentCardServiceTest {
 
         PaymentCardResponse result = paymentCardService.updateCard(id, updateCardRequest);
 
+        assertThat(result).isEqualTo(paymentCardResponse);
+
         verify(paymentCardDao).getPaymentCardById(id);
         verify(paymentCardMapper).updateEntity(updateCardRequest, paymentCard);
         verify(paymentCardDao).save(paymentCard);
-
-        assertThat(result).isEqualTo(paymentCardResponse);
+        verify(paymentCardMapper).toResponse(paymentCard);
     }
 
     @Test
@@ -174,9 +223,10 @@ class PaymentCardServiceTest {
 
         PaymentCardResponse result = paymentCardService.deactivateCard(id);
 
-        verify(paymentCardDao).deactivatePaymentCard(id);
-
         assertThat(result).isEqualTo(paymentCardResponse);
+
+        verify(paymentCardDao).deactivatePaymentCard(id);
+        verify(paymentCardMapper).toResponse(paymentCard);
     }
 
     @Test
@@ -189,8 +239,9 @@ class PaymentCardServiceTest {
 
         PaymentCardResponse result = paymentCardService.activateCard(id);
 
-        verify(paymentCardDao).activatePaymentCard(id);
-
         assertThat(result).isEqualTo(paymentCardResponse);
+
+        verify(paymentCardDao).activatePaymentCard(id);
+        verify(paymentCardMapper).toResponse(paymentCard);
     }
 }

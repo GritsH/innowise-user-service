@@ -1,10 +1,12 @@
 package com.grits.userservice.dao;
 
 import com.grits.userservice.entity.PaymentCard;
+import com.grits.userservice.exception.PaymentCardAlreadyExistsException;
 import com.grits.userservice.exception.PaymentCardNotFoundException;
 import com.grits.userservice.repository.PaymentCardRepository;
 import com.grits.userservice.specification.PaymentCardSpecification;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,7 +24,11 @@ public class PaymentCardDao {
     private final PaymentCardRepository paymentCardRepository;
 
     public PaymentCard save(PaymentCard paymentCard) {
-        return paymentCardRepository.save(paymentCard);
+        try {
+            return paymentCardRepository.saveAndFlush(paymentCard);
+        } catch (DataIntegrityViolationException e) {
+            throw new PaymentCardAlreadyExistsException(paymentCard.getNumber());
+        }
     }
 
     public PaymentCard getPaymentCardById(UUID id) {
@@ -48,12 +54,7 @@ public class PaymentCardDao {
     }
 
 
-    public Page<PaymentCard> getAllCards(
-            String holder,
-            int page,
-            int size
-    ) {
-
+    public Page<PaymentCard> getAllCards(String holder, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("expirationDate").ascending());
         Specification<PaymentCard> specification = Specification.allOf(PaymentCardSpecification.hasHolder(holder));
         return paymentCardRepository.findAll(specification, pageable);

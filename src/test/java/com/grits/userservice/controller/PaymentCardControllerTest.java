@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -39,34 +40,26 @@ public class PaymentCardControllerTest extends AbstractIntegrationTest {
     UserRepository userRepository;
 
     private User user;
+    private static final String DEFAULT_HOLDER = "holder";
+    private static final LocalDate DEFAULT_EXPIRATION = LocalDate.of(2030, 1, 1);
 
     @BeforeEach
     void setUp() {
         paymentCardRepository.deleteAll();
         userRepository.deleteAll();
-
-        user = new User();
-        user.setName("john");
-        user.setSurname("doe");
-        user.setEmail("john@gmail.com");
-        user.setBirthDate(LocalDate.of(2000, 1, 1));
-        user.setActive(true);
-        user = userRepository.save(user);
+        user = createUser();
     }
 
     @Test
     @DisplayName("should create card")
-    void createCard() throws Exception {
-        CreateCardRequest request = new CreateCardRequest();
-        request.setNumber("1234567890123456");
-        request.setHolder("holder");
-        request.setExpirationDate(LocalDate.now().plusYears(2));
+    void createNewCard() throws Exception {
+        CreateCardRequest request = createCardRequest();
 
         mockMvc.perform(post("/v1/cards/user/{id}", user.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.holder").value("holder"))
+                .andExpect(jsonPath("$.holder").value(DEFAULT_HOLDER))
                 .andExpect(jsonPath("$.active").value(true));
 
         assertThat(paymentCardRepository.countByUserId(user.getId())).isEqualTo(1);
@@ -75,19 +68,19 @@ public class PaymentCardControllerTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("should return card by id")
     void returnCardById() throws Exception {
-        PaymentCard card = createTestCard();
+        PaymentCard card = createCard();
 
         mockMvc.perform(get("/v1/cards/{id}", card.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(card.getId().toString()))
-                .andExpect(jsonPath("$.holder").value("holder"));
+                .andExpect(jsonPath("$.holder").value(DEFAULT_HOLDER));
     }
 
     @Test
     @DisplayName("should return cards by user id")
     void returnCardsByUserId() throws Exception {
-        createTestCard();
-        createTestCard("4444444444444444");
+        createCard();
+        createCard(generate());
 
         mockMvc.perform(get("/v1/cards/user/{id}", user.getId()))
                 .andExpect(status().isOk())
@@ -97,8 +90,8 @@ public class PaymentCardControllerTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("should return all cards")
     void returnAllCards() throws Exception {
-        createTestCard();
-        createTestCard("4444444444444444");
+        createCard();
+        createCard(generate());
 
         mockMvc.perform(get("/v1/cards"))
                 .andExpect(status().isOk())
@@ -108,41 +101,44 @@ public class PaymentCardControllerTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("should filter cards by holder")
     void filterCardsByHolder() throws Exception {
-        createTestCard();
-        createTestCard("4444444444444444", "another");
+        createCard();
+        createCard();
+        createCard(generate(), "another holder");
 
-        mockMvc.perform(get("/v1/cards").param("holder", "holder"))
+        mockMvc.perform(get("/v1/cards")
+                        .param("holder", "another holder"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.length()").value(1))
-                .andExpect(jsonPath("$.content[0].holder").value("holder"));
+                .andExpect(jsonPath("$.content[0].holder").value("another holder"));
     }
 
     @Test
     @DisplayName("should update card")
     void updateCard() throws Exception {
-        PaymentCard card = createTestCard();
+        PaymentCard card = createCard();
 
         UpdateCardRequest request = new UpdateCardRequest();
         request.setNumber("9999999999999999");
-        request.setHolder("anotherholder");
-        request.setExpirationDate(LocalDate.now().plusYears(3));
+        request.setHolder("updated-holder");
+        request.setExpirationDate(LocalDate.of(2032, 1, 1));
 
         mockMvc.perform(patch("/v1/cards/{id}", card.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.number").value("9999999999999999"))
-                .andExpect(jsonPath("$.holder").value("anotherholder"));
+                .andExpect(jsonPath("$.holder").value("updated-holder"));
 
         PaymentCard updated = paymentCardRepository.findById(card.getId()).orElseThrow();
 
-        assertThat(updated.getHolder()).isEqualTo("anotherholder");
+        assertThat(updated.getHolder()).isEqualTo("updated-holder");
+        assertThat(updated.getNumber()).isEqualTo("9999999999999999");
     }
 
     @Test
     @DisplayName("should deactivate card")
     void deactivateCard() throws Exception {
-        PaymentCard card = createTestCard();
+        PaymentCard card = createCard();
 
         mockMvc.perform(patch("/v1/cards/{id}/deactivate", card.getId()))
                 .andExpect(status().isOk())
@@ -154,10 +150,7 @@ public class PaymentCardControllerTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("should activate card")
     void activateCard() throws Exception {
-        PaymentCard card = createTestCard();
-        card.setActive(false);
-
-        paymentCardRepository.save(card);
+        PaymentCard card = createInactiveCard();
 
         mockMvc.perform(patch("/v1/cards/{id}/activate", card.getId()))
                 .andExpect(status().isOk())
@@ -167,13 +160,12 @@ public class PaymentCardControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("should return 400 when card request invalid")
-    void validateRequest() throws Exception {
+    @DisplayName("should return 400 when request is invalid")
+    void return400WhenRequestIsInvalid() throws Exception {
         CreateCardRequest request = new CreateCardRequest();
         request.setNumber("123");
         request.setHolder("");
         request.setExpirationDate(LocalDate.now().minusDays(1));
-
 
         mockMvc.perform(post("/v1/cards/user/{id}", user.getId())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -182,26 +174,83 @@ public class PaymentCardControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @DisplayName("should return 409 when card already exists")
+    void return409WhenCardAlreadyExists() throws Exception {
+        CreateCardRequest request = createCardRequest();
+
+        mockMvc.perform(post("/v1/cards/user/{id}", user.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(post("/v1/cards/user/{id}", user.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
     @DisplayName("should return 404 when card does not exist")
-    void validateCardDoesNotExist() throws Exception {
+    void return404WhenCardDoesNotExist() throws Exception {
         mockMvc.perform(get("/v1/cards/{id}", UUID.randomUUID())).andExpect(status().isNotFound());
     }
 
-    private PaymentCard createTestCard() {
-        return createTestCard("1234567890123456", "holder");
+    @Test
+    @DisplayName("should return 500 when unexpected exception happens")
+    void return500WhenInternalErrorOccurs() throws Exception {
+        mockMvc.perform(get("/v1/cards/not-a-valid-uuid"))
+                .andExpect(status().isInternalServerError());
     }
 
-    private void createTestCard(String number) {
-        createTestCard(number, "holder");
+    private User createUser() {
+        User newUser = new User();
+        newUser.setName("john");
+        newUser.setSurname("doe");
+        newUser.setEmail("john@gmail.com");
+        newUser.setBirthDate(LocalDate.of(2000, 1, 1));
+        newUser.setActive(true);
+        return userRepository.save(newUser);
     }
 
-    private PaymentCard createTestCard(String number, String holder) {
+    private PaymentCard createCard() {
+        return createCard(generate(), DEFAULT_HOLDER);
+    }
+
+    private PaymentCard createCard(String number) {
+        return createCard(number, DEFAULT_HOLDER);
+    }
+
+    private PaymentCard createCard(String number, String holder) {
         PaymentCard card = new PaymentCard();
         card.setNumber(number);
         card.setHolder(holder);
-        card.setExpirationDate(LocalDate.now().plusYears(2));
+        card.setExpirationDate(DEFAULT_EXPIRATION);
         card.setActive(true);
         card.setUser(user);
         return paymentCardRepository.save(card);
+    }
+
+    private PaymentCard createInactiveCard() {
+        PaymentCard card = createCard();
+        card.setActive(false);
+        return paymentCardRepository.save(card);
+    }
+
+    private CreateCardRequest createCardRequest() {
+        CreateCardRequest request = new CreateCardRequest();
+        request.setNumber(generate());
+        request.setHolder(DEFAULT_HOLDER);
+        request.setExpirationDate(DEFAULT_EXPIRATION);
+        return request;
+    }
+
+    private String generate() {
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        StringBuilder cardNumber = new StringBuilder(16);
+        cardNumber.append(random.nextInt(1, 10));
+        for (int i = 1; i < 16; i++) {
+            cardNumber.append(random.nextInt(10));
+        }
+        return cardNumber.toString();
     }
 }
