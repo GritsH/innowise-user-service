@@ -7,6 +7,7 @@ import com.grits.userservice.model.response.paymentcard.PaymentCardResponse;
 import com.grits.userservice.service.PaymentCardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -41,7 +42,7 @@ public class PaymentCardController implements PaymentCardApi {
 
     @Override
     public ResponseEntity<PaymentCardResponse> createCard(UUID id, CreateCardRequest request) {
-        return ResponseEntity.ok(paymentCardService.createCard(id, request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(paymentCardService.createCard(id, request));
     }
 
     @Override

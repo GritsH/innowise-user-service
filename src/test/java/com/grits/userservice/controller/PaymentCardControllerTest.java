@@ -58,7 +58,7 @@ public class PaymentCardControllerTest extends AbstractIntegrationTest {
         mockMvc.perform(post("/v1/cards/user/{id}", user.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.holder").value(DEFAULT_HOLDER))
                 .andExpect(jsonPath("$.active").value(true));
 
@@ -181,7 +181,7 @@ public class PaymentCardControllerTest extends AbstractIntegrationTest {
         mockMvc.perform(post("/v1/cards/user/{id}", user.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         mockMvc.perform(post("/v1/cards/user/{id}", user.getId())
                         .contentType(MediaType.APPLICATION_JSON)

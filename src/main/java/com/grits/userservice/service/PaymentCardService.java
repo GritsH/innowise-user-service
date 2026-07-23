@@ -9,7 +9,6 @@ import com.grits.userservice.mapper.PaymentCardMapper;
 import com.grits.userservice.model.request.paymentcard.CreateCardRequest;
 import com.grits.userservice.model.request.paymentcard.UpdateCardRequest;
 import com.grits.userservice.model.response.paymentcard.PaymentCardResponse;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -18,6 +17,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -51,6 +51,7 @@ public class PaymentCardService {
         return paymentCardMapper.toResponse(savedCard);
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = "cards", key = "#id")
     public PaymentCardResponse getCardById(UUID id) {
         log.info("Getting card with id {}", id);
@@ -58,6 +59,7 @@ public class PaymentCardService {
         return paymentCardMapper.toResponse(card);
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = "userCards", key = "#userId")
     public List<PaymentCardResponse> getCardsByUserId(UUID userId) {
         log.info("Getting cards for user {}", userId);
@@ -68,6 +70,7 @@ public class PaymentCardService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public Page<PaymentCardResponse> getAllCards(String holder, int page, int size) {
         log.info("Getting all cards");
         return paymentCardDao

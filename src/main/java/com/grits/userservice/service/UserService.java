@@ -6,13 +6,13 @@ import com.grits.userservice.mapper.UserMapper;
 import com.grits.userservice.model.request.user.CreateUserRequest;
 import com.grits.userservice.model.request.user.UpdateUserRequest;
 import com.grits.userservice.model.response.user.UserResponse;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -36,6 +36,7 @@ public class UserService {
         return userMapper.toResponse(savedUser);
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = "users", key = "#id")
     public UserResponse getUserById(UUID id) {
         log.info("Getting user with id: {}", id);
@@ -43,6 +44,7 @@ public class UserService {
         return userMapper.toResponse(user);
     }
 
+    @Transactional(readOnly = true)
     public Page<UserResponse> getAllUsers(String name, String surname, int page, int size) {
         log.info("Getting all users");
         return userDao
