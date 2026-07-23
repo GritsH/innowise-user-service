@@ -23,11 +23,14 @@ public class UserDao {
     private final UserRepository userRepository;
 
     public User save(User user) {
-        try {
-            return userRepository.save(user);
-        } catch (DataIntegrityViolationException e) {
+        if (userRepository.existsByEmail(user.getEmail())) {
             throw new UserAlreadyExistsException(user.getEmail());
         }
+        return userRepository.save(user);
+    }
+
+    public User saveUpdatedUser(User user) {
+        return userRepository.save(user);
     }
 
     public User getUserById(UUID id) {

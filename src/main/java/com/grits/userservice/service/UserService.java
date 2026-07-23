@@ -26,8 +26,6 @@ public class UserService {
     private final UserMapper userMapper;
 
     public UserResponse createUser(CreateUserRequest request) {
-        log.info("Creating user with email: {}", request.getEmail());
-
         User user = userMapper.toEntity(request);
         user.setActive(true);
         User savedUser = userDao.save(user);
@@ -39,14 +37,12 @@ public class UserService {
     @Transactional(readOnly = true)
     @Cacheable(value = "users", key = "#id")
     public UserResponse getUserById(UUID id) {
-        log.info("Getting user with id: {}", id);
         User user = userDao.getUserById(id);
         return userMapper.toResponse(user);
     }
 
     @Transactional(readOnly = true)
     public Page<UserResponse> getAllUsers(String name, String surname, int page, int size) {
-        log.info("Getting all users");
         return userDao
                 .getAllUsers(name, surname, page, size)
                 .map(userMapper::toResponse);
@@ -55,11 +51,9 @@ public class UserService {
     @Transactional
     @CachePut(value = "users", key = "#id")
     public UserResponse updateUser(UUID id, UpdateUserRequest request) {
-        log.info("Updating user with id: {}", id);
-
         User user = userDao.getUserById(id);
         userMapper.updateEntity(request, user);
-        User updatedUser = userDao.save(user);
+        User updatedUser = userDao.saveUpdatedUser(user);
 
         log.info("User updated with id: {}", updatedUser.getId());
         return userMapper.toResponse(updatedUser);
@@ -68,7 +62,6 @@ public class UserService {
     @Transactional
     @CachePut(value = "users", key = "#id")
     public UserResponse deactivateUser(UUID id) {
-        log.info("Deactivating user with id: {}", id);
         User user = userDao.deactivateUser(id);
         log.info("User deactivated with id: {}", user.getId());
         return userMapper.toResponse(user);
@@ -77,7 +70,6 @@ public class UserService {
     @Transactional
     @CachePut(value = "users", key = "#id")
     public UserResponse activateUser(UUID id) {
-        log.info("Activating user with id: {}", id);
         User user = userDao.activateUser(id);
         log.info("User activated with id: {}", user.getId());
         return userMapper.toResponse(user);

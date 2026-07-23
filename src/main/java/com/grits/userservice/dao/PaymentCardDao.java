@@ -24,11 +24,14 @@ public class PaymentCardDao {
     private final PaymentCardRepository paymentCardRepository;
 
     public PaymentCard save(PaymentCard paymentCard) {
-        try {
-            return paymentCardRepository.saveAndFlush(paymentCard);
-        } catch (DataIntegrityViolationException e) {
+        if (paymentCardRepository.existsByNumber(paymentCard.getNumber())) {
             throw new PaymentCardAlreadyExistsException(paymentCard.getNumber());
         }
+        return paymentCardRepository.save(paymentCard);
+    }
+
+    public PaymentCard saveUpdatedPaymentCard(PaymentCard paymentCard) {
+        return paymentCardRepository.save(paymentCard);
     }
 
     public PaymentCard getPaymentCardById(UUID id) {

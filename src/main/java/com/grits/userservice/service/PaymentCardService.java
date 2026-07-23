@@ -36,8 +36,6 @@ public class PaymentCardService {
 
     @Transactional
     public PaymentCardResponse createCard(UUID userId, CreateCardRequest request) {
-        log.info("Creating card for user {}", userId);
-
         User user = userDao.getUserById(userId);
         if (paymentCardDao.countCardsByUserId(userId) >= 5) {
             throw new MaxCardAmountException(userId);
@@ -54,7 +52,6 @@ public class PaymentCardService {
     @Transactional(readOnly = true)
     @Cacheable(value = "cards", key = "#id")
     public PaymentCardResponse getCardById(UUID id) {
-        log.info("Getting card with id {}", id);
         PaymentCard card = paymentCardDao.getPaymentCardById(id);
         return paymentCardMapper.toResponse(card);
     }
@@ -62,7 +59,6 @@ public class PaymentCardService {
     @Transactional(readOnly = true)
     @Cacheable(value = "userCards", key = "#userId")
     public List<PaymentCardResponse> getCardsByUserId(UUID userId) {
-        log.info("Getting cards for user {}", userId);
         return paymentCardDao
                 .getPaymentCardsByUserId(userId)
                 .stream()
@@ -72,7 +68,6 @@ public class PaymentCardService {
 
     @Transactional(readOnly = true)
     public Page<PaymentCardResponse> getAllCards(String holder, int page, int size) {
-        log.info("Getting all cards");
         return paymentCardDao
                 .getAllCards(holder, page, size)
                 .map(paymentCardMapper::toResponse);
@@ -84,11 +79,9 @@ public class PaymentCardService {
             evict = @CacheEvict(value = "userCards", key = "#result.userId")
     )
     public PaymentCardResponse updateCard(UUID id, UpdateCardRequest request) {
-        log.info("Updating card with id {}", id);
-
         PaymentCard card = paymentCardDao.getPaymentCardById(id);
         paymentCardMapper.updateEntity(request, card);
-        PaymentCard updatedCard = paymentCardDao.save(card);
+        PaymentCard updatedCard = paymentCardDao.saveUpdatedPaymentCard(card);
 
         log.info("Card updated with id {}", id);
         return paymentCardMapper.toResponse(updatedCard);
@@ -100,7 +93,6 @@ public class PaymentCardService {
             evict = @CacheEvict(value = "userCards", key = "#result.userId")
     )
     public PaymentCardResponse deactivateCard(UUID id) {
-        log.info("Deactivating card with id {}", id);
         PaymentCard card = paymentCardDao.deactivatePaymentCard(id);
         log.info("Card deactivated with id {}", id);
         return paymentCardMapper.toResponse(card);
@@ -112,7 +104,6 @@ public class PaymentCardService {
             evict = @CacheEvict(value = "userCards", key = "#result.userId")
     )
     public PaymentCardResponse activateCard(UUID id) {
-        log.info("Activating card with id {}", id);
         PaymentCard card = paymentCardDao.activatePaymentCard(id);
         log.info("Card activated with id {}", id);
         return paymentCardMapper.toResponse(card);
