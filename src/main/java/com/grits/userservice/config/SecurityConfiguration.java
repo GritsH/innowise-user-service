@@ -23,7 +23,7 @@ public class SecurityConfiguration {
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
-                .csrf(AbstractHttpConfigurer::disable) // Disable CSRF for testing
+                .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         return http.build();
     }
