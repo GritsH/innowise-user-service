@@ -1,6 +1,8 @@
 services:
 
   user-service:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     build:
       context: .
       dockerfile: Dockerfile
@@ -15,6 +17,8 @@ services:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_started
+      keycloak:
         condition: service_started
 
   postgres:
@@ -55,6 +59,19 @@ services:
       timeout: 3s
       retries: 10
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.2
+    container_name: keycloak
+    command: start-dev
+    ports:
+      - "8081:8080"
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    volumes:
+      - keycloak-data:/opt/keycloak/data
+
 volumes:
   postgres-data:
   redis-data:
+  keycloak-data:
