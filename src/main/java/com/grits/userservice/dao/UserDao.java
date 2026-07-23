@@ -6,7 +6,6 @@ import com.grits.userservice.exception.UserNotFoundException;
 import com.grits.userservice.repository.UserRepository;
 import com.grits.userservice.specification.UserSpecification;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
