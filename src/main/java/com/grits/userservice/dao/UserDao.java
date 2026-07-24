@@ -6,7 +6,6 @@ import com.grits.userservice.exception.UserNotFoundException;
 import com.grits.userservice.repository.UserRepository;
 import com.grits.userservice.specification.UserSpecification;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,11 +22,14 @@ public class UserDao {
     private final UserRepository userRepository;
 
     public User save(User user) {
-        try {
-            return userRepository.save(user);
-        } catch (DataIntegrityViolationException e) {
+        if (userRepository.existsByEmail(user.getEmail())) {
             throw new UserAlreadyExistsException(user.getEmail());
         }
+        return userRepository.save(user);
+    }
+
+    public User saveUpdatedUser(User user) {
+        return userRepository.save(user);
     }
 
     public User getUserById(UUID id) {

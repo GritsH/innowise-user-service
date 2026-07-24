@@ -134,7 +134,7 @@ class UserServiceTest {
         UUID id = UUID.randomUUID();
 
         when(userDao.getUserById(id)).thenReturn(user);
-        when(userDao.save(user)).thenReturn(user);
+        when(userDao.saveUpdatedUser(user)).thenReturn(user);
         when(userMapper.toResponse(user)).thenReturn(userResponse);
 
         UserResponse result = userService.updateUser(id, updateUserRequest);
@@ -143,7 +143,7 @@ class UserServiceTest {
 
         verify(userDao).getUserById(id);
         verify(userMapper).updateEntity(updateUserRequest, user);
-        verify(userDao).save(user);
+        verify(userDao).saveUpdatedUser(user);
         verify(userMapper).toResponse(user);
     }
 

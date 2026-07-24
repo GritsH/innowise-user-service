@@ -2,14 +2,15 @@ package com.grits.userservice.model.response.paymentcard;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,8 +27,4 @@ public class PaymentCardResponse {
     private boolean active;
 
     private UUID userId;
-
-    private LocalDateTime createdAt;
-
-    private LocalDateTime updatedAt;
 }

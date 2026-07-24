@@ -200,7 +200,7 @@ class PaymentCardServiceTest {
         UUID id = UUID.randomUUID();
 
         when(paymentCardDao.getPaymentCardById(id)).thenReturn(paymentCard);
-        when(paymentCardDao.save(paymentCard)).thenReturn(paymentCard);
+        when(paymentCardDao.saveUpdatedPaymentCard(paymentCard)).thenReturn(paymentCard);
         when(paymentCardMapper.toResponse(paymentCard)).thenReturn(paymentCardResponse);
 
         PaymentCardResponse result = paymentCardService.updateCard(id, updateCardRequest);
@@ -209,7 +209,7 @@ class PaymentCardServiceTest {
 
         verify(paymentCardDao).getPaymentCardById(id);
         verify(paymentCardMapper).updateEntity(updateCardRequest, paymentCard);
-        verify(paymentCardDao).save(paymentCard);
+        verify(paymentCardDao).saveUpdatedPaymentCard(paymentCard);
         verify(paymentCardMapper).toResponse(paymentCard);
     }
 

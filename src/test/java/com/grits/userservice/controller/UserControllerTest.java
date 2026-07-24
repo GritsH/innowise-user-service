@@ -48,7 +48,7 @@ public class UserControllerTest extends AbstractIntegrationTest {
         mockMvc.perform(post("/v1/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.name").value(request.getName()))
                 .andExpect(jsonPath("$.surname").value(request.getSurname()))
                 .andExpect(jsonPath("$.email").value(request.getEmail()))
@@ -157,7 +157,7 @@ public class UserControllerTest extends AbstractIntegrationTest {
         mockMvc.perform(post("/v1/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         mockMvc.perform(post("/v1/users")
                         .contentType(MediaType.APPLICATION_JSON)

@@ -6,8 +6,8 @@ create table userservice.user
     birth_date date,
     email      varchar(100) unique,
     active     boolean,
-    created_at timestamp        default now(),
-    updated_at timestamp        default now()
+    created_at timestamptz      default now(),
+    updated_at timestamptz      default now()
 );
 
 create index idx_email on userservice.user (email);

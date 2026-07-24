@@ -29,4 +29,6 @@ public interface PaymentCardRepository extends JpaRepository<PaymentCard, UUID>,
             nativeQuery = true
     )
     int countByUserId(@Param("userId") UUID userId);
+
+    boolean existsByNumber(String number);
 }

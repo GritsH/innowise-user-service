@@ -6,8 +6,8 @@ create table userservice.payment_card
     holder          varchar(100),
     expiration_date date,
     active          boolean,
-    created_at      timestamp default now(),
-    updated_at      timestamp default now(),
+    created_at timestamptz default now(),
+    updated_at timestamptz default now(),
     foreign key (user_id) references userservice.user (id)
 );
 
