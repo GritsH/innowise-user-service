@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,6 +34,7 @@ public class PaymentCardController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<PaymentCardResponse>> getAllCards(
             @RequestParam(required = false) String holder,
             @RequestParam(defaultValue = "0") int page,
@@ -43,11 +45,13 @@ public class PaymentCardController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PaymentCardResponse> getCardById(@PathVariable UUID id) {
         return ResponseEntity.ok(paymentCardService.getCardById(id));
     }
 
     @GetMapping("/user/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<PaymentCardResponse>> getCardsByUserId(@PathVariable UUID id) {
         return ResponseEntity.ok(paymentCardService.getCardsByUserId(id));
     }
@@ -63,11 +67,13 @@ public class PaymentCardController {
     }
 
     @PatchMapping("/{id}/activate")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PaymentCardResponse> activateCard(@PathVariable UUID id) {
         return ResponseEntity.ok(paymentCardService.activateCard(id));
     }
 
     @PatchMapping("/{id}/deactivate")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PaymentCardResponse> deactivateCard(@PathVariable UUID id) {
         return ResponseEntity.ok(paymentCardService.deactivateCard(id));
     }
