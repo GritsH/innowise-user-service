@@ -2,7 +2,7 @@ services:
 
   user-service:
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - "keycloak.local:host-gateway"
     build:
       context: .
       dockerfile: Dockerfile
@@ -68,6 +68,8 @@ services:
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HOSTNAME: keycloak.local
+      KC_HOSTNAME_PORT: 8081
     volumes:
       - keycloak-data:/opt/keycloak/data
 
