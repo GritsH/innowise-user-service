@@ -1,6 +1,7 @@
 package com.grits.userservice.converter;
 
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -19,6 +20,7 @@ public class KeycloakRoleConverter implements Converter<Jwt, Collection<GrantedA
     private static final String ROLE_PREFIX = "ROLE_";
 
     @Override
+    @NonNull
     public Collection<GrantedAuthority> convert(Jwt jwt) {
         Map<String, Object> realmAccess = jwt.getClaim(REALM_ACCESS);
         if (realmAccess == null || realmAccess.isEmpty()) {
