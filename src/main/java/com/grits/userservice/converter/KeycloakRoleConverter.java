@@ -20,7 +20,6 @@ public class KeycloakRoleConverter implements Converter<Jwt, Collection<GrantedA
     private static final String ROLE_PREFIX = "ROLE_";
 
     @Override
-    @NonNull
     public Collection<GrantedAuthority> convert(@NonNull Jwt jwt) {
         Map<String, Object> realmAccess = jwt.getClaim(REALM_ACCESS);
         if (realmAccess == null || realmAccess.isEmpty()) {
