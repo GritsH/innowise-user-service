@@ -188,6 +188,7 @@ public class UserControllerTest extends AbstractIntegrationTest {
 
     private User createUser(String name) {
         User user = new User();
+        user.setKeycloakUserId(UUID.randomUUID());
         user.setName(name);
         user.setSurname("doe");
         user.setBirthDate(DEFAULT_BIRTH_DATE);
@@ -204,6 +205,7 @@ public class UserControllerTest extends AbstractIntegrationTest {
 
     private CreateUserRequest createUserRequest() {
         CreateUserRequest request = new CreateUserRequest();
+        request.setKeycloakUserId(UUID.randomUUID().toString());
         request.setName("john");
         request.setSurname("doe");
         request.setBirthDate(DEFAULT_BIRTH_DATE);

@@ -204,6 +204,7 @@ class PaymentCardControllerTest extends AbstractIntegrationTest {
 
     private User createUser() {
         User newUser = new User();
+        newUser.setKeycloakUserId(UUID.randomUUID());
         newUser.setName("john");
         newUser.setSurname("doe");
         newUser.setEmail("john@gmail.com");

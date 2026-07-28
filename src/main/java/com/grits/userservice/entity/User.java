@@ -37,6 +37,9 @@ public class User extends AuditableEntity {
     )
     private UUID id;
 
+    @Column(name = "keycloak_user_id", nullable = false, unique = true)
+    private UUID keycloakUserId;
+
     @Column(name = "name", nullable = false)
     private String name;
 

@@ -1,0 +1,1 @@
+alter table userservice.user add keycloak_user_id uuid unique not null;

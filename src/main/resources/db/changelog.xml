@@ -3,4 +3,5 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
     <include file="/db/xml/user.xml"/>
     <include file="/db/xml/payment_card.xml"/>
+    <include file="/db/xml/add_keycloak_id.xml"/>
 </databaseChangeLog>

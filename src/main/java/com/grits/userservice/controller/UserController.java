@@ -45,7 +45,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@userSecurity.isOwner(#id) or hasRole('ADMIN')")
     public ResponseEntity<UserResponse> getUserById(@PathVariable UUID id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }
@@ -56,6 +56,7 @@ public class UserController {
     }
 
     @PatchMapping("/{id}")
+    @PreAuthorize("@userSecurity.isOwner(#id)")
     public ResponseEntity<UserResponse> updateUser(@PathVariable UUID id, @Valid @RequestBody UpdateUserRequest request) {
         return ResponseEntity.ok(userService.updateUser(id, request));
     }

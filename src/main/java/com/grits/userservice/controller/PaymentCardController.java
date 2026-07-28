@@ -45,23 +45,25 @@ public class PaymentCardController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@cardSecurity.belongsToCurrentUser(#id) or hasRole('ADMIN')")
     public ResponseEntity<PaymentCardResponse> getCardById(@PathVariable UUID id) {
         return ResponseEntity.ok(paymentCardService.getCardById(id));
     }
 
     @GetMapping("/user/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@userSecurity.isOwner(#id) or hasRole('ADMIN')")
     public ResponseEntity<List<PaymentCardResponse>> getCardsByUserId(@PathVariable UUID id) {
         return ResponseEntity.ok(paymentCardService.getCardsByUserId(id));
     }
 
     @PostMapping("/user/{id}")
+    @PreAuthorize("@userSecurity.isOwner(#id) or hasRole('ADMIN')")
     public ResponseEntity<PaymentCardResponse> createCard(@PathVariable UUID id, @Valid @RequestBody CreateCardRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(paymentCardService.createCard(id, request));
     }
 
     @PatchMapping("/{id}")
+    @PreAuthorize("@cardSecurity.belongsToCurrentUser(#id) or hasRole('ADMIN')")
     public ResponseEntity<PaymentCardResponse> updateCard(@PathVariable UUID id, @Valid @RequestBody UpdateCardRequest request) {
         return ResponseEntity.ok(paymentCardService.updateCard(id, request));
     }

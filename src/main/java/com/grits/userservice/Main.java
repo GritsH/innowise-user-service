@@ -7,7 +7,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 
 @SpringBootApplication
 @EnableJpaAuditing
-@EnableMethodSecurity()
 public class Main {
     public static void main(String[] args) {
         SpringApplication.run(Main.class, args);
