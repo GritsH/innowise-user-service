@@ -3,6 +3,7 @@ package com.grits.userservice.controller;
 import com.grits.userservice.model.request.paymentcard.CreateCardRequest;
 import com.grits.userservice.model.request.paymentcard.UpdateCardRequest;
 import com.grits.userservice.model.response.paymentcard.PaymentCardResponse;
+import com.grits.userservice.security.CardSecurity;
 import com.grits.userservice.service.PaymentCardService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,10 +28,12 @@ import java.util.UUID;
 public class PaymentCardController {
 
     private final PaymentCardService paymentCardService;
+    private final CardSecurity cardSecurity;
 
     @Autowired
-    public PaymentCardController(PaymentCardService paymentCardService) {
+    public PaymentCardController(PaymentCardService paymentCardService, CardSecurity cardSecurity) {
         this.paymentCardService = paymentCardService;
+        this.cardSecurity = cardSecurity;
     }
 
     @GetMapping
@@ -45,26 +48,30 @@ public class PaymentCardController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("@cardSecurity.belongsToCurrentUser(#id) or hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<PaymentCardResponse> getCardById(@PathVariable UUID id) {
+        cardSecurity.belongsToCurrentUser(id);
         return ResponseEntity.ok(paymentCardService.getCardById(id));
     }
 
     @GetMapping("/user/{id}")
-    @PreAuthorize("@userSecurity.isOwner(#id) or hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<List<PaymentCardResponse>> getCardsByUserId(@PathVariable UUID id) {
+        cardSecurity.belongsToCurrentUser(id);
         return ResponseEntity.ok(paymentCardService.getCardsByUserId(id));
     }
 
     @PostMapping("/user/{id}")
-    @PreAuthorize("@userSecurity.isOwner(#id) or hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<PaymentCardResponse> createCard(@PathVariable UUID id, @Valid @RequestBody CreateCardRequest request) {
+        cardSecurity.belongsToCurrentUser(id);
         return ResponseEntity.status(HttpStatus.CREATED).body(paymentCardService.createCard(id, request));
     }
 
     @PatchMapping("/{id}")
-    @PreAuthorize("@cardSecurity.belongsToCurrentUser(#id) or hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<PaymentCardResponse> updateCard(@PathVariable UUID id, @Valid @RequestBody UpdateCardRequest request) {
+        cardSecurity.belongsToCurrentUser(id);
         return ResponseEntity.ok(paymentCardService.updateCard(id, request));
     }
 

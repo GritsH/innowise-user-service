@@ -17,10 +17,14 @@ public class UserSecurity {
 
     private final UserDao userDao;
 
-    public boolean isOwner(UUID userId) {
+    public void isOwner(UUID userId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || authentication.getPrincipal() == null) {
+        if (SecurityHelper.isNotAuthenticated(authentication)) {
             throw new UserAccessDeniedException();
+        }
+
+        if (SecurityHelper.isAdmin(authentication)) {
+            return;
         }
 
         Jwt jwt = (Jwt) authentication.getPrincipal();
@@ -29,6 +33,5 @@ public class UserSecurity {
         if (!keycloakUserId.equals(user.getKeycloakUserId())) {
             throw new UserAccessDeniedException();
         }
-        return true;
     }
 }

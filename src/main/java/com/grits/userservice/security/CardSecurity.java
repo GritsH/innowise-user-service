@@ -17,10 +17,14 @@ public class CardSecurity {
 
     private final PaymentCardDao cardDao;
 
-    public boolean belongsToCurrentUser(UUID cardId) {
+    public void belongsToCurrentUser(UUID cardId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || authentication.getPrincipal() == null) {
+        if (SecurityHelper.isNotAuthenticated(authentication)) {
             throw new UserAccessDeniedException();
+        }
+
+        if (SecurityHelper.isAdmin(authentication)) {
+            return;
         }
 
         Jwt jwt = (Jwt) authentication.getPrincipal();
@@ -30,6 +34,5 @@ public class CardSecurity {
         if (!keycloakUserId.equals(card.getUser().getKeycloakUserId())) {
             throw new UserAccessDeniedException();
         }
-        return true;
     }
 }

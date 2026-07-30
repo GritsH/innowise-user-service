@@ -3,6 +3,7 @@ package com.grits.userservice.controller;
 import com.grits.userservice.model.request.user.CreateUserRequest;
 import com.grits.userservice.model.request.user.UpdateUserRequest;
 import com.grits.userservice.model.response.user.UserResponse;
+import com.grits.userservice.security.UserSecurity;
 import com.grits.userservice.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,10 +27,12 @@ import java.util.UUID;
 public class UserController {
 
     private final UserService userService;
+    private final UserSecurity userSecurity;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, UserSecurity userSecurity) {
         this.userService = userService;
+        this.userSecurity = userSecurity;
     }
 
     @GetMapping
@@ -45,8 +48,9 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("@userSecurity.isOwner(#id) or hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<UserResponse> getUserById(@PathVariable UUID id) {
+        userSecurity.isOwner(id);
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
@@ -56,8 +60,9 @@ public class UserController {
     }
 
     @PatchMapping("/{id}")
-    @PreAuthorize("@userSecurity.isOwner(#id)")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<UserResponse> updateUser(@PathVariable UUID id, @Valid @RequestBody UpdateUserRequest request) {
+        userSecurity.isOwner(id);
         return ResponseEntity.ok(userService.updateUser(id, request));
     }
 
