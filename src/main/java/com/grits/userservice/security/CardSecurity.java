@@ -2,8 +2,8 @@ package com.grits.userservice.security;
 
 import com.grits.userservice.dao.PaymentCardDao;
 import com.grits.userservice.entity.PaymentCard;
-import com.grits.userservice.exception.UserAccessDeniedException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -20,7 +20,7 @@ public class CardSecurity {
     public void belongsToCurrentUser(UUID cardId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (SecurityHelper.isNotAuthenticated(authentication)) {
-            throw new UserAccessDeniedException();
+            throw new AccessDeniedException("Not authenticated");
         }
 
         if (SecurityHelper.isAdmin(authentication)) {
@@ -32,7 +32,7 @@ public class CardSecurity {
         PaymentCard card = cardDao.getPaymentCardById(cardId);
 
         if (!keycloakUserId.equals(card.getUser().getKeycloakUserId())) {
-            throw new UserAccessDeniedException();
+            throw new AccessDeniedException("Access denied");
         }
     }
 }
