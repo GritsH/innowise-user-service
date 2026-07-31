@@ -3,14 +3,12 @@ package com.grits.userservice.controller;
 import com.grits.userservice.model.request.user.CreateUserRequest;
 import com.grits.userservice.model.request.user.UpdateUserRequest;
 import com.grits.userservice.model.response.user.UserResponse;
-import com.grits.userservice.security.UserSecurity;
 import com.grits.userservice.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,16 +25,13 @@ import java.util.UUID;
 public class UserController {
 
     private final UserService userService;
-    private final UserSecurity userSecurity;
 
     @Autowired
-    public UserController(UserService userService, UserSecurity userSecurity) {
+    public UserController(UserService userService) {
         this.userService = userService;
-        this.userSecurity = userSecurity;
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<UserResponse>> getAllUsers(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String surname,
@@ -48,9 +43,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<UserResponse> getUserById(@PathVariable UUID id) {
-        userSecurity.isOwner(id);
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
@@ -60,20 +53,16 @@ public class UserController {
     }
 
     @PatchMapping("/{id}")
-    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<UserResponse> updateUser(@PathVariable UUID id, @Valid @RequestBody UpdateUserRequest request) {
-        userSecurity.isOwner(id);
         return ResponseEntity.ok(userService.updateUser(id, request));
     }
 
     @PatchMapping("/{id}/deactivate")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserResponse> deactivateUser(@PathVariable UUID id) {
         return ResponseEntity.ok(userService.deactivateUser(id));
     }
 
     @PatchMapping("/{id}/activate")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserResponse> activateUser(@PathVariable UUID id) {
         return ResponseEntity.ok(userService.activateUser(id));
     }
