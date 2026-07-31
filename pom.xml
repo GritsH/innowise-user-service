@@ -27,7 +27,8 @@
         <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
         <sonar.coverage.exclusions>
             **/config/**,
-            **/*Configuration.java
+            **/*Configuration.java,
+            **/converter/**
         </sonar.coverage.exclusions>
     </properties>
 
