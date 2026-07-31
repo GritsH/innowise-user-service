@@ -2,10 +2,11 @@ package com.grits.userservice.security;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.stereotype.Component;
 
-@Component
 public class SecurityHelper {
+
+    private SecurityHelper() {
+    }
 
     public static boolean isAdmin(Authentication authentication) {
         return authentication.getAuthorities().stream()

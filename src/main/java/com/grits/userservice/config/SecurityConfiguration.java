@@ -6,7 +6,6 @@ import com.grits.userservice.security.UserAuthorizationManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -22,6 +21,8 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity
 public class SecurityConfiguration {
 
+    private static final String ADMIN_ROLE = "ADMIN";
+
     @Bean
     public SecurityFilterChain filterChain(
             HttpSecurity http,
@@ -32,19 +33,19 @@ public class SecurityConfiguration {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/v1/users").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/v1/users").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/v1/users").hasRole(ADMIN_ROLE)
                         .requestMatchers(HttpMethod.GET, "/v1/users/{id}").access(userAuthorizationManager)
                         .requestMatchers(HttpMethod.PATCH, "/v1/users/{id}").access(userAuthorizationManager)
-                        .requestMatchers(HttpMethod.PATCH, "/v1/users/{id}/activate").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PATCH, "/v1/users/{id}/deactivate").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/v1/users/{id}/activate").hasRole(ADMIN_ROLE)
+                        .requestMatchers(HttpMethod.PATCH, "/v1/users/{id}/deactivate").hasRole(ADMIN_ROLE)
 
-                        .requestMatchers(HttpMethod.GET, "/v1/cards").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/v1/cards").hasRole(ADMIN_ROLE)
                         .requestMatchers(HttpMethod.GET, "/v1/cards/{id}").access(cardAuthorizationManager)
                         .requestMatchers(HttpMethod.GET, "/v1/cards/user/{id}").access(userAuthorizationManager)
                         .requestMatchers(HttpMethod.POST, "/v1/cards/user/{id}").access(userAuthorizationManager)
                         .requestMatchers(HttpMethod.PATCH, "/v1/cards/{id}").access(cardAuthorizationManager)
-                        .requestMatchers(HttpMethod.PATCH, "/v1/cards/{id}/activate").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PATCH, "/v1/cards/{id}/deactivate").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/v1/cards/{id}/activate").hasRole(ADMIN_ROLE)
+                        .requestMatchers(HttpMethod.PATCH, "/v1/cards/{id}/deactivate").hasRole(ADMIN_ROLE)
                         .anyRequest()
                         .authenticated()
                 )
