@@ -21,7 +21,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity
 public class SecurityConfiguration {
 
-    private static final String ADMIN_ROLE = "ADMIN";
+    private static final String ROLE_ADMIN = "ADMIN";
 
     @Bean
     public SecurityFilterChain filterChain(
@@ -33,19 +33,19 @@ public class SecurityConfiguration {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/v1/users").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/v1/users").hasRole(ADMIN_ROLE)
+                        .requestMatchers(HttpMethod.GET, "/v1/users").hasRole(ROLE_ADMIN)
                         .requestMatchers(HttpMethod.GET, "/v1/users/{id}").access(userAuthorizationManager)
                         .requestMatchers(HttpMethod.PATCH, "/v1/users/{id}").access(userAuthorizationManager)
-                        .requestMatchers(HttpMethod.PATCH, "/v1/users/{id}/activate").hasRole(ADMIN_ROLE)
-                        .requestMatchers(HttpMethod.PATCH, "/v1/users/{id}/deactivate").hasRole(ADMIN_ROLE)
+                        .requestMatchers(HttpMethod.PATCH, "/v1/users/{id}/activate").hasRole(ROLE_ADMIN)
+                        .requestMatchers(HttpMethod.PATCH, "/v1/users/{id}/deactivate").hasRole(ROLE_ADMIN)
 
-                        .requestMatchers(HttpMethod.GET, "/v1/cards").hasRole(ADMIN_ROLE)
+                        .requestMatchers(HttpMethod.GET, "/v1/cards").hasRole(ROLE_ADMIN)
                         .requestMatchers(HttpMethod.GET, "/v1/cards/{id}").access(cardAuthorizationManager)
                         .requestMatchers(HttpMethod.GET, "/v1/cards/user/{id}").access(userAuthorizationManager)
                         .requestMatchers(HttpMethod.POST, "/v1/cards/user/{id}").access(userAuthorizationManager)
                         .requestMatchers(HttpMethod.PATCH, "/v1/cards/{id}").access(cardAuthorizationManager)
-                        .requestMatchers(HttpMethod.PATCH, "/v1/cards/{id}/activate").hasRole(ADMIN_ROLE)
-                        .requestMatchers(HttpMethod.PATCH, "/v1/cards/{id}/deactivate").hasRole(ADMIN_ROLE)
+                        .requestMatchers(HttpMethod.PATCH, "/v1/cards/{id}/activate").hasRole(ROLE_ADMIN)
+                        .requestMatchers(HttpMethod.PATCH, "/v1/cards/{id}/deactivate").hasRole(ROLE_ADMIN)
                         .anyRequest()
                         .authenticated()
                 )
