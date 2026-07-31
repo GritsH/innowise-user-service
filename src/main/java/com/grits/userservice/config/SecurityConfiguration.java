@@ -20,7 +20,6 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 @RequiredArgsConstructor
 @EnableMethodSecurity
-@Profile("!test")
 public class SecurityConfiguration {
 
     @Bean

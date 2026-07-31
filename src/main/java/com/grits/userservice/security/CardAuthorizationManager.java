@@ -1,7 +1,7 @@
 package com.grits.userservice.security;
 
 import com.grits.userservice.dao.PaymentCardDao;
-import com.grits.userservice.entity.PaymentCard;
+import com.grits.userservice.exception.PaymentCardNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationManager;
@@ -29,14 +29,18 @@ public class CardAuthorizationManager implements AuthorizationManager<RequestAut
             return new AuthorizationDecision(true);
         }
 
-        String id = context.getVariables().get("id");
-        if (id == null) {
+        String cardId = context.getVariables().get("id");
+        if (cardId == null) {
             return new AuthorizationDecision(false);
         }
 
         Jwt jwt = (Jwt) authentication.getPrincipal();
         UUID keycloakUserId = UUID.fromString(jwt.getSubject());
-        PaymentCard card = paymentCardDao.getPaymentCardById(UUID.fromString(id));
-        return new AuthorizationDecision(keycloakUserId.equals(card.getUser().getKeycloakUserId()));
+        try {
+            UUID owner = paymentCardDao.findOwnerKeycloakId(UUID.fromString(cardId));
+            return new AuthorizationDecision(keycloakUserId.equals(owner));
+        } catch (PaymentCardNotFoundException e) {
+            return new AuthorizationDecision(false);
+        }
     }
 }

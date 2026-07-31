@@ -130,6 +130,30 @@ class PaymentCardDaoTest {
     }
 
     @Test
+    @DisplayName("should return owner's Keycloak id")
+    void getOwnerKeycloakId() {
+        UUID keycloakUserId = UUID.randomUUID();
+
+        when(repository.findOwnerKeycloakId(paymentCard.getId())).thenReturn(Optional.of(keycloakUserId));
+
+        UUID result = paymentCardDao.findOwnerKeycloakId(cardId);
+
+        assertThat(result).isEqualTo(keycloakUserId);
+
+        verify(repository).findOwnerKeycloakId(cardId);
+    }
+
+    @Test
+    @DisplayName("should throw when card does not exist")
+    void shouldThrowWhenCardDoesNotExist() {
+        when(repository.findOwnerKeycloakId(cardId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> paymentCardDao.findOwnerKeycloakId(cardId)).isInstanceOf(PaymentCardNotFoundException.class);
+
+        verify(repository).findOwnerKeycloakId(cardId);
+    }
+
+    @Test
     @DisplayName("should deactivate payment card")
     void deactivatePaymentCard() {
         when(repository.findById(cardId)).thenReturn(Optional.of(paymentCard));

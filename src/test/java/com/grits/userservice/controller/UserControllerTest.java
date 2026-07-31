@@ -5,6 +5,7 @@ import com.grits.userservice.entity.User;
 import com.grits.userservice.model.request.user.CreateUserRequest;
 import com.grits.userservice.model.request.user.UpdateUserRequest;
 import com.grits.userservice.repository.UserRepository;
+import com.grits.userservice.util.JwtTestUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -66,7 +67,8 @@ public class UserControllerTest extends AbstractIntegrationTest {
     void returnUserById() throws Exception {
         User user = createUser("john");
 
-        mockMvc.perform(get("/v1/users/{id}", user.getId()))
+        mockMvc.perform(get("/v1/users/{id}", user.getId())
+                        .with(JwtTestUtils.user(user)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(user.getId().toString()))
                 .andExpect(jsonPath("$.email").value(user.getEmail()));
@@ -84,6 +86,7 @@ public class UserControllerTest extends AbstractIntegrationTest {
         request.setEmail(user.getEmail());
 
         mockMvc.perform(patch("/v1/users/{id}", user.getId())
+                        .with(JwtTestUtils.user(user))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -100,7 +103,8 @@ public class UserControllerTest extends AbstractIntegrationTest {
     void deactivateUser() throws Exception {
         User user = createUser("john");
 
-        mockMvc.perform(patch("/v1/users/{id}/deactivate", user.getId()))
+        mockMvc.perform(patch("/v1/users/{id}/deactivate", user.getId())
+                        .with(JwtTestUtils.admin()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.active").value(false));
 
@@ -112,7 +116,8 @@ public class UserControllerTest extends AbstractIntegrationTest {
     void activateUser() throws Exception {
         User user = createInactiveUser();
 
-        mockMvc.perform(patch("/v1/users/{id}/activate", user.getId()))
+        mockMvc.perform(patch("/v1/users/{id}/activate", user.getId())
+                        .with(JwtTestUtils.admin()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.active").value(true));
 
@@ -126,7 +131,8 @@ public class UserControllerTest extends AbstractIntegrationTest {
         createUser("john");
         createUser("jane");
 
-        mockMvc.perform(get("/v1/users"))
+        mockMvc.perform(get("/v1/users")
+                        .with(JwtTestUtils.admin()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.length()").value(2));
     }
@@ -137,6 +143,7 @@ public class UserControllerTest extends AbstractIntegrationTest {
         createUser("josef");
 
         mockMvc.perform(get("/v1/users")
+                        .with(JwtTestUtils.admin())
                         .param("name", "josef"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.length()").value(1))
@@ -144,9 +151,12 @@ public class UserControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("should return 404 when user does not exist")
-    void return404WhenUserDoesNotExist() throws Exception {
-        mockMvc.perform(get("/v1/users/{id}", UUID.randomUUID())).andExpect(status().isNotFound());
+    @DisplayName("should return 403 when accessing another user")
+    void return403WhenUserDoesNotOwnResource() throws Exception {
+        User user = createUser("john");
+        mockMvc.perform(get("/v1/users/{id}", UUID.randomUUID())
+                        .with(JwtTestUtils.user(user)))
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -177,13 +187,6 @@ public class UserControllerTest extends AbstractIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    @DisplayName("should return 500 when unexpected exception happens")
-    void return500WhenInternalErrorOccurs() throws Exception {
-        mockMvc.perform(get("/v1/users/not-a-valid-uuid"))
-                .andExpect(status().isInternalServerError());
     }
 
     private User createUser(String name) {

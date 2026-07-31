@@ -2,6 +2,7 @@ package com.grits.userservice.security;
 
 import com.grits.userservice.dao.UserDao;
 import com.grits.userservice.entity.User;
+import com.grits.userservice.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationManager;
@@ -36,7 +37,11 @@ public class UserAuthorizationManager implements AuthorizationManager<RequestAut
 
         Jwt jwt = (Jwt) authentication.getPrincipal();
         UUID keycloakUserId = UUID.fromString(jwt.getSubject());
-        User user = userDao.getUserById(UUID.fromString(id));
-        return new AuthorizationDecision(keycloakUserId.equals(user.getKeycloakUserId()));
+        try {
+            User user = userDao.getUserById(UUID.fromString(id));
+            return new AuthorizationDecision(keycloakUserId.equals(user.getKeycloakUserId()));
+        } catch (UserNotFoundException e) {
+            return new AuthorizationDecision(false);
+        }
     }
 }

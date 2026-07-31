@@ -8,27 +8,36 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public interface PaymentCardRepository extends JpaRepository<PaymentCard, UUID>, JpaSpecificationExecutor<PaymentCard> {
 
     @Query("""
-       SELECT p
-       FROM PaymentCard p
-       WHERE p.user.id = :userId
-       """)
+            SELECT p
+            FROM PaymentCard p
+            WHERE p.user.id = :userId
+            """)
     List<PaymentCard> findAllByUserId(@Param("userId") UUID userId);
 
     @Query(
             value = """
-            SELECT COUNT(*)
-            FROM userservice.payment_card
-            WHERE user_id = :userId
-            """,
+                    SELECT COUNT(*)
+                    FROM userservice.payment_card
+                    WHERE user_id = :userId
+                    """,
             nativeQuery = true
     )
     int countByUserId(@Param("userId") UUID userId);
+
+    @Query("""
+                select u.keycloakUserId
+                from PaymentCard c
+                join c.user u
+                where c.id = :cardId
+            """)
+    Optional<UUID> findOwnerKeycloakId(UUID cardId);
 
     boolean existsByNumber(String number);
 }
