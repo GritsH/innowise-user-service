@@ -39,6 +39,10 @@ public class PaymentCardDao {
         );
     }
 
+    public UUID findOwnerKeycloakId(UUID cardId) {
+        return paymentCardRepository.findOwnerKeycloakId(cardId).orElseThrow(() -> new PaymentCardNotFoundException(cardId));
+    }
+
     public List<PaymentCard> getPaymentCardsByUserId(UUID userId) {
         return paymentCardRepository.findAllByUserId(userId);
     }

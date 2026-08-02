@@ -1,6 +1,8 @@
 services:
 
   user-service:
+    extra_hosts:
+      - "keycloak.local:host-gateway"
     build:
       context: .
       dockerfile: Dockerfile
@@ -16,6 +18,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
+    networks:
+      - default
 
   postgres:
     image: postgres:17
@@ -58,3 +62,8 @@ services:
 volumes:
   postgres-data:
   redis-data:
+
+networks:
+  default:
+    name: innowise-network
+    external: true

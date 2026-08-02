@@ -7,6 +7,7 @@ import com.grits.userservice.model.request.paymentcard.CreateCardRequest;
 import com.grits.userservice.model.request.paymentcard.UpdateCardRequest;
 import com.grits.userservice.repository.PaymentCardRepository;
 import com.grits.userservice.repository.UserRepository;
+import com.grits.userservice.util.JwtTestUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -56,6 +57,7 @@ class PaymentCardControllerTest extends AbstractIntegrationTest {
         CreateCardRequest request = createCardRequest();
 
         mockMvc.perform(post("/v1/cards/user/{id}", user.getId())
+                        .with(JwtTestUtils.user(user))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -70,7 +72,8 @@ class PaymentCardControllerTest extends AbstractIntegrationTest {
     void returnCardById() throws Exception {
         PaymentCard card = createCard();
 
-        mockMvc.perform(get("/v1/cards/{id}", card.getId()))
+        mockMvc.perform(get("/v1/cards/{id}", card.getId())
+                        .with(JwtTestUtils.user(user)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(card.getId().toString()))
                 .andExpect(jsonPath("$.holder").value(DEFAULT_HOLDER));
@@ -82,7 +85,8 @@ class PaymentCardControllerTest extends AbstractIntegrationTest {
         createCard();
         createCard(generate());
 
-        mockMvc.perform(get("/v1/cards/user/{id}", user.getId()))
+        mockMvc.perform(get("/v1/cards/user/{id}", user.getId())
+                        .with(JwtTestUtils.user(user)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2));
     }
@@ -93,7 +97,8 @@ class PaymentCardControllerTest extends AbstractIntegrationTest {
         createCard();
         createCard(generate());
 
-        mockMvc.perform(get("/v1/cards"))
+        mockMvc.perform(get("/v1/cards")
+                        .with(JwtTestUtils.admin()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.length()").value(2));
     }
@@ -106,6 +111,7 @@ class PaymentCardControllerTest extends AbstractIntegrationTest {
         createCard(generate(), "another holder");
 
         mockMvc.perform(get("/v1/cards")
+                        .with(JwtTestUtils.admin())
                         .param("holder", "another holder"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.length()").value(1))
@@ -123,6 +129,7 @@ class PaymentCardControllerTest extends AbstractIntegrationTest {
         request.setExpirationDate(LocalDate.of(2032, 1, 1));
 
         mockMvc.perform(patch("/v1/cards/{id}", card.getId())
+                        .with(JwtTestUtils.user(user))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -140,7 +147,8 @@ class PaymentCardControllerTest extends AbstractIntegrationTest {
     void deactivateCard() throws Exception {
         PaymentCard card = createCard();
 
-        mockMvc.perform(patch("/v1/cards/{id}/deactivate", card.getId()))
+        mockMvc.perform(patch("/v1/cards/{id}/deactivate", card.getId())
+                        .with(JwtTestUtils.admin()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.active").value(false));
 
@@ -152,7 +160,8 @@ class PaymentCardControllerTest extends AbstractIntegrationTest {
     void activateCard() throws Exception {
         PaymentCard card = createInactiveCard();
 
-        mockMvc.perform(patch("/v1/cards/{id}/activate", card.getId()))
+        mockMvc.perform(patch("/v1/cards/{id}/activate", card.getId())
+                        .with(JwtTestUtils.admin()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.active").value(true));
 
@@ -168,6 +177,7 @@ class PaymentCardControllerTest extends AbstractIntegrationTest {
         request.setExpirationDate(LocalDate.now().minusDays(1));
 
         mockMvc.perform(post("/v1/cards/user/{id}", user.getId())
+                        .with(JwtTestUtils.user(user))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
@@ -179,31 +189,29 @@ class PaymentCardControllerTest extends AbstractIntegrationTest {
         CreateCardRequest request = createCardRequest();
 
         mockMvc.perform(post("/v1/cards/user/{id}", user.getId())
+                        .with(JwtTestUtils.user(user))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated());
 
         mockMvc.perform(post("/v1/cards/user/{id}", user.getId())
+                        .with(JwtTestUtils.user(user))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict());
     }
 
     @Test
-    @DisplayName("should return 404 when card does not exist")
-    void return404WhenCardDoesNotExist() throws Exception {
-        mockMvc.perform(get("/v1/cards/{id}", UUID.randomUUID())).andExpect(status().isNotFound());
-    }
-
-    @Test
-    @DisplayName("should return 500 when unexpected exception happens")
-    void return500WhenInternalErrorOccurs() throws Exception {
-        mockMvc.perform(get("/v1/cards/not-a-valid-uuid"))
-                .andExpect(status().isInternalServerError());
+    @DisplayName("should return 403 when accessing not their card")
+    void return403WhenCardDoesNotBelongToUser() throws Exception {
+        mockMvc.perform(get("/v1/cards/{id}", UUID.randomUUID())
+                        .with(JwtTestUtils.user(user)))
+                .andExpect(status().isForbidden());
     }
 
     private User createUser() {
         User newUser = new User();
+        newUser.setKeycloakUserId(UUID.randomUUID());
         newUser.setName("john");
         newUser.setSurname("doe");
         newUser.setEmail("john@gmail.com");

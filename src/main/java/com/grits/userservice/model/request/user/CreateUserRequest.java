@@ -28,4 +28,7 @@ public class CreateUserRequest {
     @Email(message = "Invalid email format")
     @Size(max = 100, message = "Email must be less than 100 characters long")
     private String email;
+
+    @NotBlank(message = "Keycloak ID is required")
+    private String keycloakUserId;
 }

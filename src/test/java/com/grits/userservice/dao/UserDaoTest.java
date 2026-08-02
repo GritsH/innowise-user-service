@@ -46,6 +46,7 @@ class UserDaoTest {
 
         user = new User();
         user.setId(userId);
+        user.setKeycloakUserId(UUID.randomUUID());
         user.setActive(true);
         user.setName("name");
         user.setSurname("surname");
