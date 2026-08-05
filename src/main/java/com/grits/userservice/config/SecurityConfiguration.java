@@ -34,6 +34,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/v1/users").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/users").hasRole(ROLE_ADMIN)
+                        .requestMatchers(HttpMethod.GET, "/v1/users/by-email").access(userAuthorizationManager)
                         .requestMatchers(HttpMethod.GET, "/v1/users/{id}").access(userAuthorizationManager)
                         .requestMatchers(HttpMethod.PATCH, "/v1/users/{id}").access(userAuthorizationManager)
                         .requestMatchers(HttpMethod.PATCH, "/v1/users/{id}/activate").hasRole(ROLE_ADMIN)

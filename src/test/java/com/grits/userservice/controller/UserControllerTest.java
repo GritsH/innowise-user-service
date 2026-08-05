@@ -75,6 +75,19 @@ public class UserControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @DisplayName("should return user by email")
+    void returnUserByEmail() throws Exception {
+        User user = createUser("john");
+
+        mockMvc.perform(get("/v1/users/by-email")
+                        .param("email", user.getEmail())
+                        .with(JwtTestUtils.user(user)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(user.getId().toString()))
+                .andExpect(jsonPath("$.email").value(user.getEmail()));
+    }
+
+    @Test
     @DisplayName("should update user")
     void updateUser() throws Exception {
         User user = createUser("john");

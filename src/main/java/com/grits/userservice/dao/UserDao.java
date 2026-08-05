@@ -38,6 +38,12 @@ public class UserDao {
         );
     }
 
+    public User getUserByEmail(String email) {
+        return userRepository.findByEmail(email).orElseThrow(
+                () -> new UserNotFoundException(email)
+        );
+    }
+
     public User deactivateUser(UUID id) {
         User user = getUserById(id);
         user.setActive(false);

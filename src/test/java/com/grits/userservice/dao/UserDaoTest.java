@@ -107,6 +107,18 @@ class UserDaoTest {
     }
 
     @Test
+    @DisplayName("should get user by email")
+    void getUserByEmail() {
+        when(userRepository.findByEmail("email@gmail.com")).thenReturn(Optional.of(user));
+
+        User result = userDao.getUserByEmail("email@gmail.com");
+
+        assertThat(result).isEqualTo(user);
+
+        verify(userRepository).findByEmail("email@gmail.com");
+    }
+
+    @Test
     @DisplayName("should throw exception if user does not exist")
     void getUserByIdWithException() {
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
@@ -114,6 +126,16 @@ class UserDaoTest {
         assertThatThrownBy(() -> userDao.getUserById(userId)).isInstanceOf(UserNotFoundException.class);
 
         verify(userRepository).findById(userId);
+    }
+
+    @Test
+    @DisplayName("should throw exception if user's email does not exist")
+    void getUserByEmailWithException() {
+        when(userRepository.findByEmail("email@gmail.com")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userDao.getUserByEmail("email@gmail.com")).isInstanceOf(UserNotFoundException.class);
+
+        verify(userRepository).findByEmail("email@gmail.com");
     }
 
     @Test

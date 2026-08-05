@@ -42,6 +42,13 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "users", key = "#email")
+    public UserResponse getUserByEmail(String email) {
+        User user = userDao.getUserByEmail(email);
+        return userMapper.toResponse(user);
+    }
+
+    @Transactional(readOnly = true)
     public Page<UserResponse> getAllUsers(String name, String surname, int page, int size) {
         return userDao
                 .getAllUsers(name, surname, page, size)
