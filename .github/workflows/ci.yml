@@ -1,5 +1,4 @@
 name: Spring CI
-
 on:
   push:
     branches:
