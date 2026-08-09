@@ -116,6 +116,23 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("should get users by ids")
+    void getUsersByIds() {
+        List<UUID> ids = List.of(UUID.randomUUID());
+
+        when(userDao.getUsersByIds(ids)).thenReturn(List.of(user));
+        when(userMapper.toResponse(user)).thenReturn(userResponse);
+
+        List<UserResponse> result = userService.getUsersByIds(ids);
+
+        assertThat(result).isNotNull();
+        assertThat(result).containsExactly(userResponse);
+
+        verify(userDao).getUsersByIds(ids);
+        verify(userMapper).toResponse(user);
+    }
+
+    @Test
     @DisplayName("should throw exception if user does not exist")
     void getUserByIdThrowException() {
         UUID id = UUID.randomUUID();

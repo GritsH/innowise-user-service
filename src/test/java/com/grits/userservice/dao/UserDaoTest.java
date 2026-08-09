@@ -129,6 +129,20 @@ class UserDaoTest {
     }
 
     @Test
+    @DisplayName("should get users by ids")
+    void getUsersByIds() {
+        List<UUID> ids = List.of(userId);
+
+        when(userRepository.findByIdIn(ids)).thenReturn(List.of(user));
+
+        List<User> result = userDao.getUsersByIds(ids);
+
+        assertThat(result).isNotEmpty();
+
+        verify(userRepository).findByIdIn(ids);
+    }
+
+    @Test
     @DisplayName("should throw exception if user's email does not exist")
     void getUserByEmailWithException() {
         when(userRepository.findByEmail("email@gmail.com")).thenReturn(Optional.empty());
