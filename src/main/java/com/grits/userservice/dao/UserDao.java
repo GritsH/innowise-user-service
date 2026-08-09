@@ -13,6 +13,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -36,6 +37,10 @@ public class UserDao {
         return userRepository.findById(id).orElseThrow(
                 () -> new UserNotFoundException(id)
         );
+    }
+
+    public List<User> getUsersByIds(List<UUID> ids) {
+        return userRepository.findByIdIn(ids);
     }
 
     public User getUserByEmail(String email) {

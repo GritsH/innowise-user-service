@@ -14,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -39,6 +40,13 @@ public class UserService {
     public UserResponse getUserById(UUID id) {
         User user = userDao.getUserById(id);
         return userMapper.toResponse(user);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserResponse> getUsersByIds(List<UUID> ids) {
+        return userDao.getUsersByIds(ids).stream()
+                .map(userMapper::toResponse)
+                .toList();
     }
 
     @Transactional(readOnly = true)
