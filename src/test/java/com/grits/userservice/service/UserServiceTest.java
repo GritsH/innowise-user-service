@@ -125,8 +125,7 @@ class UserServiceTest {
 
         List<UserResponse> result = userService.getUsersByIds(ids);
 
-        assertThat(result).isNotNull();
-        assertThat(result).containsExactly(userResponse);
+        assertThat(result).isNotNull().containsExactly(userResponse);
 
         verify(userDao).getUsersByIds(ids);
         verify(userMapper).toResponse(user);
