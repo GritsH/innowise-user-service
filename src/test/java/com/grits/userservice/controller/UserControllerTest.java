@@ -79,7 +79,7 @@ public class UserControllerTest extends AbstractIntegrationTest {
     void returnUserByEmail() throws Exception {
         User user = createUser("john");
 
-        mockMvc.perform(get("/v1/users/by-email")
+        mockMvc.perform(get("/v1/users/email")
                         .param("email", user.getEmail())
                         .with(JwtTestUtils.user(user)))
                 .andExpect(status().isOk())
@@ -93,7 +93,7 @@ public class UserControllerTest extends AbstractIntegrationTest {
         User firstUser = createUser("john");
         User secondUser = createUser("jane");
 
-        mockMvc.perform(get("/v1/users/by-ids")
+        mockMvc.perform(get("/v1/users/ids")
                         .param("ids", firstUser.getId().toString())
                         .param("ids", secondUser.getId().toString())
                         .with(JwtTestUtils.admin()))
