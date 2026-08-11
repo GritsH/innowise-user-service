@@ -48,12 +48,12 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
-    @GetMapping("/by-email")
+    @GetMapping("/email")
     public ResponseEntity<UserResponse> getUserByEmail(@RequestParam String email) {
         return ResponseEntity.ok(userService.getUserByEmail(email));
     }
 
-    @GetMapping("/by-ids")
+    @GetMapping("/ids")
     public ResponseEntity<List<UserResponse>> getUsersByIds(@RequestParam List<UUID> ids) {
         return ResponseEntity.ok(userService.getUsersByIds(ids));
     }

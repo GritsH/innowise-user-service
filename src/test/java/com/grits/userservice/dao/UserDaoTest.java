@@ -133,13 +133,13 @@ class UserDaoTest {
     void getUsersByIds() {
         List<UUID> ids = List.of(userId);
 
-        when(userRepository.findByIdIn(ids)).thenReturn(List.of(user));
+        when(userRepository.findByIds(ids)).thenReturn(List.of(user));
 
         List<User> result = userDao.getUsersByIds(ids);
 
         assertThat(result).isNotEmpty();
 
-        verify(userRepository).findByIdIn(ids);
+        verify(userRepository).findByIds(ids);
     }
 
     @Test

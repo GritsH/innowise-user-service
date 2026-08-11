@@ -40,7 +40,7 @@ public class UserDao {
     }
 
     public List<User> getUsersByIds(List<UUID> ids) {
-        return userRepository.findByIdIn(ids);
+        return userRepository.findByIds(ids);
     }
 
     public User getUserByEmail(String email) {
