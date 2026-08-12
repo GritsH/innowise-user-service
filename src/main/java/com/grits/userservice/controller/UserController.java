@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -45,6 +46,16 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getUserById(@PathVariable UUID id) {
         return ResponseEntity.ok(userService.getUserById(id));
+    }
+
+    @GetMapping("/email")
+    public ResponseEntity<UserResponse> getUserByEmail(@RequestParam String email) {
+        return ResponseEntity.ok(userService.getUserByEmail(email));
+    }
+
+    @GetMapping("/ids")
+    public ResponseEntity<List<UserResponse>> getUsersByIds(@RequestParam List<UUID> ids) {
+        return ResponseEntity.ok(userService.getUsersByIds(ids));
     }
 
     @PostMapping

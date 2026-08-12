@@ -75,6 +75,39 @@ public class UserControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @DisplayName("should return user by email")
+    void returnUserByEmail() throws Exception {
+        User user = createUser("john");
+
+        mockMvc.perform(get("/v1/users/email")
+                        .param("email", user.getEmail())
+                        .with(JwtTestUtils.user(user)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(user.getId().toString()))
+                .andExpect(jsonPath("$.email").value(user.getEmail()));
+    }
+
+    @Test
+    @DisplayName("should return users by ids")
+    void returnUsersByIds() throws Exception {
+        User firstUser = createUser("john");
+        User secondUser = createUser("jane");
+
+        mockMvc.perform(get("/v1/users/ids")
+                        .param("ids", firstUser.getId().toString())
+                        .param("ids", secondUser.getId().toString())
+                        .with(JwtTestUtils.admin()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].id").value(firstUser.getId().toString()))
+                .andExpect(jsonPath("$[0].name").value(firstUser.getName()))
+                .andExpect(jsonPath("$[0].email").value(firstUser.getEmail()))
+                .andExpect(jsonPath("$[1].id").value(secondUser.getId().toString()))
+                .andExpect(jsonPath("$[1].name").value(secondUser.getName()))
+                .andExpect(jsonPath("$[1].email").value(secondUser.getEmail()));
+    }
+
+    @Test
     @DisplayName("should update user")
     void updateUser() throws Exception {
         User user = createUser("john");

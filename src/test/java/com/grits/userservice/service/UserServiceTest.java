@@ -102,6 +102,36 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("should get user by email")
+    void getUserByEmail() {
+        when(userDao.getUserByEmail("email@gmail.com")).thenReturn(user);
+        when(userMapper.toResponse(user)).thenReturn(userResponse);
+
+        UserResponse result = userService.getUserByEmail("email@gmail.com");
+
+        assertThat(result).isNotNull();
+
+        verify(userDao).getUserByEmail("email@gmail.com");
+        verify(userMapper).toResponse(user);
+    }
+
+    @Test
+    @DisplayName("should get users by ids")
+    void getUsersByIds() {
+        List<UUID> ids = List.of(UUID.randomUUID());
+
+        when(userDao.getUsersByIds(ids)).thenReturn(List.of(user));
+        when(userMapper.toResponse(user)).thenReturn(userResponse);
+
+        List<UserResponse> result = userService.getUsersByIds(ids);
+
+        assertThat(result).isNotNull().containsExactly(userResponse);
+
+        verify(userDao).getUsersByIds(ids);
+        verify(userMapper).toResponse(user);
+    }
+
+    @Test
     @DisplayName("should throw exception if user does not exist")
     void getUserByIdThrowException() {
         UUID id = UUID.randomUUID();

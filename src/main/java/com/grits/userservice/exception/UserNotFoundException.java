@@ -9,4 +9,8 @@ public class UserNotFoundException extends GlobalServiceException {
     public UserNotFoundException(UUID user) {
         super("User " + user + " not found", HttpStatus.NOT_FOUND);
     }
+
+    public UserNotFoundException(String user) {
+        super("User with email " + user + " not found", HttpStatus.NOT_FOUND);
+    }
 }

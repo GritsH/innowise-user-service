@@ -30,15 +30,32 @@ public class UserAuthorizationManager implements AuthorizationManager<RequestAut
             return new AuthorizationDecision(true);
         }
 
-        String id = context.getVariables().get("id");
-        if (id == null) {
-            return new AuthorizationDecision(false);
-        }
-
         Jwt jwt = (Jwt) authentication.getPrincipal();
-        UUID keycloakUserId = UUID.fromString(jwt.getSubject());
+        String id = context.getVariables().get("id");
+        if (id != null) {
+            return validateById(jwt, id);
+        }
+        String email = context.getRequest().getParameter("email");
+        if (email != null) {
+            return validateByEmail(jwt, email);
+        }
+        return new AuthorizationDecision(false);
+    }
+
+    private AuthorizationDecision validateById(Jwt jwt, String id) {
         try {
             User user = userDao.getUserById(UUID.fromString(id));
+            UUID keycloakUserId = UUID.fromString(jwt.getSubject());
+            return new AuthorizationDecision(keycloakUserId.equals(user.getKeycloakUserId()));
+        } catch (UserNotFoundException e) {
+            return new AuthorizationDecision(false);
+        }
+    }
+
+    private AuthorizationDecision validateByEmail(Jwt jwt, String email) {
+        try {
+            User user = userDao.getUserByEmail(email);
+            UUID keycloakUserId = UUID.fromString(jwt.getSubject());
             return new AuthorizationDecision(keycloakUserId.equals(user.getKeycloakUserId()));
         } catch (UserNotFoundException e) {
             return new AuthorizationDecision(false);
