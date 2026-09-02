@@ -48,6 +48,8 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.PATCH, "/v1/cards/{id}").access(cardAuthorizationManager)
                         .requestMatchers(HttpMethod.PATCH, "/v1/cards/{id}/activate").hasRole(ROLE_ADMIN)
                         .requestMatchers(HttpMethod.PATCH, "/v1/cards/{id}/deactivate").hasRole(ROLE_ADMIN)
+
+                        .requestMatchers(HttpMethod.GET, "/actuator/health/**").permitAll()
                         .anyRequest()
                         .authenticated()
                 )
